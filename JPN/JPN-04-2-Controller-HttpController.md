@@ -190,6 +190,8 @@ Each `HttpController` class can define many Http request handlers. Since the num
 
   The latter two are recommended, and if the path parameters and function parameters are in the same order, the third is enough. It is easy to see that the following are equivalent:
 
+  3番目および4番目の記法を推奨します。また、パスでの順番と引数での順番が同じであれば、3番目の記法で十分です。例えば次の4つの意味は全く同じになります。
+
   - "/users/{}/books/{}"
   - "/users/{}/books/{2}"
   - "/users/{user_id}/books/{book_id}"
@@ -197,19 +199,27 @@ Each `HttpController` class can define many Http request handlers. Since the num
 
   > **Note: Path matching is not case sensitive, but parameter names are case sensitive. Parameter values ​​can be mixed in uppercase and lowercase and passed unchanged to the controller.**
 
-- #### Parameter Mapping
+  > **Note: パスのマッチングには大文字小文字の区別がありませんが、パラメータでは区別します。パラメータの値は大文字小文字をそのままハンドラーの引数に渡します。**
+
+  #### パラメータマッピング
 
   Through the previous description, we know that the parameters on the path and the query parameters after the question mark can be mapped to the parameter list of the handler function. The type of the target parameter needs to meet the following conditions:
 
+  ここまでの説明で、パスおよび`?`の後のクエリパラメータをハンドラーの引数にマッピングすることがわかりました。その引数の型は次の条件を満たす必要があります。
+
   - Must be one of a value type, a constant left value reference, or a non-const right value reference. It cannot be a non-const lvalue reference. It is recommended to use an rvalue reference so that the user can dispose of it at will.
 
-  - Basic types such as int, long, long long, unsigned long, unsigned long long, float, double, long double, etc can be used as parameter types.
+  - 型は値型(`int`など)、constな左辺値参照、constでない右辺値参照のいずれかの必要があり、constでない左辺値参照は使用できません。ユーザー側で破棄できるため、右辺値参照を使用することを推奨します。
+
+  - 基本型(`int`, `long`, `long long`, `unsigned long`, `unsigned long long`, `float`, `double`, `long double`など)
 
   - std::string
 
-  - Any type that can be assigned using the `stringstream >>` operator.
+  - `stringstream >>`演算子で代入できる型
 
   > **In addition, the drogon framework also provides a mapping mechanism from the HttpRequestPtr object to any type of parameter.**. When the number of mapping parameters in your handler parameter list is more than the number of parameters on the path, the extra parameters will be converted by the HttpRequestPtr object. The user can define any type of conversion. The way to define this conversion is to specialize the `fromRequest` template (which is defined in the HttpRequest.h header file) in the drogon namespace, for example, say we need to make a RESTful interface to create a new user, we define the user's structure as follows:
+
+  > **また、Drogonでは`HttpRequestPtr`から他の型へ変換した値をマッピングすることもできます。**ハンドラの引数よりパスのパラメータの方が多い場合、残りのパラメータは`HttpRequestPtr`により変換されます。変換方法を定義するには、`fromRequest`テンプレート(HttpRequest.hで定義されています)を特殊化してください。例えばこの例では、新しいユーザーを作成するRestfulなインタフェースでユーザーの構造体を定義しています。
 
   ```c++
   namespace myapp{
@@ -238,7 +248,7 @@ Each `HttpController` class can define many Http request handlers. Since the num
   }
   ```
 
-  With the above definition and template specialization, we can define the path map and handler as follows:
+  上述の定義とテンプレート特殊化によって、ハンドラをこのように定義できるようになります。
 
   ```c++
   class UserController:public drogon::HttpController<UserController>
@@ -257,7 +267,11 @@ Each `HttpController` class can define many Http request handlers. Since the num
 
   It can be seen that the third parameter of `myapp::User` type has no corresponding placeholder on the mapping path, and the framework regards it as a parameter converted from the `req` object and obtains this parameter through the user-specialized function template. This is very convenient for users.
 
+  3番目の引数の`myapp::User`はパスのマッピングに対応していないため、Drogonはこれを`req`からの変換と見なしてユーザー定義の関数テンプレートを利用して引数を作成します。
+
   Further, some users do not need to access the HttpRequestPtr object except for their custom type data. They can put the custom object in the position of the first parameter, and the framework will correctly complete the mapping such as the above example. It can also be written as follows:
+
+  また、カスタムデータ以外ではHttpRequestPtrオブジェクトが不要になる場合もあるでしょう。その場合、第一引数にカスタムオブジェクトを指定することでもマッピングを行えます。例えば、次のように書くことができます。
 
   ```c++
   class UserController:public drogon::HttpController<UserController>
@@ -275,21 +289,21 @@ Each `HttpController` class can define many Http request handlers. Since the num
 
 - #### Multiple Path Mapping
 
-  Drogon supports the use of regular expressions in path mapping, which can be used outside the '{}' curly brackets. For example:
+  Drogonは正規表現によるパスマッピングにも対応しており、波括弧`{}`の外側で使用することができます。
 
   ```c++
-  ADD_METHOD_TO(UserController::handler1,"/users/.*",Post); /// Match any path prefixed with `/users/`
-  ADD_METHOD_TO(UserController::handler2,"/{name}/[0-9]+",Post); ///Match any path composed with a name string and a number.
+  ADD_METHOD_TO(UserController::handler1,"/users/.*",Post); /// `/users/`で始まるすべてのパスにマッチ
+  ADD_METHOD_TO(UserController::handler2,"/{name}/[0-9]+",Post); /// 名前の文字列と数字で構成されたパスにマッチ
   ```
 
-- #### Regular Expressions Mapping
+- #### 正規表現によるマッピング
 
-  The above method has limited support for regular expressions. If users want to use regular expressions freely, drogon provides the `ADD_METHOD_VIA_REGEX` macro to achieve this, such as:
+  ここまでに示した方法では正規表現の機能に制限があります。より柔軟に正規表現を扱うために、`ADD_METHOD_VIA_REGIX`を使うことができます。
 
   ```c++
-  ADD_METHOD_VIA_REGEX(UserController::handler1,"/users/(.*)",Post); /// Match any path prefixed with `/users/` and map the rest of the path to a parameter of the handler1.
-  ADD_METHOD_VIA_REGEX(UserController::handler2,"/.*([0-9]*)",Post); /// Match any path that ends in a number and map that number to a parameter of the handler2.
-  ADD_METHOD_VIA_REGEX(UserController::handler3,"/(?!data).*",Post); /// Match any path that does not start with '/data'
+  ADD_METHOD_VIA_REGEX(UserController::handler1,"/users/(.*)",Post); /// `/users/`から始まるパスにマッチし、それ以降のパスをhandler1の引数に渡すMatch any path prefixed with `/users/` and map the rest of the path to a parameter of the handler1.
+  ADD_METHOD_VIA_REGEX(UserController::handler2,"/.*([0-9]*)",Post); /// 数字で終わるパスにマッチし、その数字をhandler2の引数に渡す　Match any path that ends in a number and map that number to a parameter of the handler2.
+  ADD_METHOD_VIA_REGEX(UserController::handler3,"/(?!data).*",Post); /// `/data`で始まらない全てのパスにマッチMatch any path that does not start with '/data'
   ```
 
   As can be seen, parameter mapping can also be done using regular expressions, and all strings matched by subexpressions will be mapped to the parameters of the handler in order.
