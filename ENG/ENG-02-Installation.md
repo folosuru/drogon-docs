@@ -200,7 +200,7 @@ This section takes Ubuntu 24.04, CentOS 7.5, MacOS 12.2 as an example to introdu
 ```
 pip install conan
 ```
-> of course you can download the installation file from `connan` [official website](https://conan.io/) to install it also.
+> of course you can download the installation file from `conan` [official website](https://conan.io/) to install it also.
 
 Create`conanfile.txt`and add the following content to it:
 
@@ -312,6 +312,7 @@ Assuming that the above environment and library dependencies are all ready, the 
 
   1. Download drogon source
 
+      Open the Windows taskbar search box, search for ​x64 Native Tools, and select ​x64 Native Tools Command Prompt for VS 2019​ as your command-line tool.
       ```dos
       cd $WORK_PATH
       git clone https://github.com/drogonframework/drogon
@@ -395,7 +396,7 @@ Assuming that the above environment and library dependencies are all ready, the 
 
        `vcpkg list`
 
-     * use `vcpkg search` for what available.
+     * To use `drogon_ctl`, type `vcpkg install drogon[ctl]`(32-bit) or `vcpkg install drogon[ctl]:x64-windows`(64-bit). Type `vcpkg search drogon` for more installation feature options.
 
   2. To add **_drogon_ctl_** command and dependencies, you need to add some variables. By following this guide, you just need to add:
 
