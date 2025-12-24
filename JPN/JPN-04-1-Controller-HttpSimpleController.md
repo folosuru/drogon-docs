@@ -64,7 +64,6 @@ URLからのルーティング(あるいはマッピング)には`PATH_ADD`マ�
     callback(resp);
 ```
 
-> **The mapping from the above path to the handler is done at compile time. In fact, the drogon framework also provides an interface for runtime completion mapping. The runtime mapping allows the user to map or modify the mapping through configuration files or other user interfaces without recompiling this program (For performance reasons, it is forbidden to add any controller mapping after running the app().run() method).**
 
 > **上記のパスからハンドラへのマッピングはコンパイル時に行われます。なお、Drogonは実行時にマッピングを設定する方法も提供しています。これは、ユーザーがマッピングの設定を再コンパイルをせずにコンフィグの編集などの手段でできるようにするためです。(パフォーマンス上の理由から、`app().run()`の実行後のcontrollerへのマッピングはできません)**
 

@@ -141,34 +141,23 @@ void User::getInfo(const HttpRequestPtr &req,
     callback(resp);
 }
 ```
-
-Each `HttpController` class can define many Http request handlers. Since the number of functions can be arbitrarily large, it is unrealistic to overload them with virtual functions. We need to register the handler itself (not the class) in the framework.
-
 `HttpController`には複数のHTTPハンドラーを定義できます。ハンドラはいくらでも定義することができるので、仮想関数のオーバーライドでの実装は非現実的です。そのため、クラスではなくハンドラ関数そのものを登録します。
 
 - #### Path Mapping
 
-  The mapping from the URL path to the handler is done by macros. You can add a multipath map with the `METHOD_ADD `macro or the `ADD_METHOD_TO` macro. All `METHOD_ADD` and `ADD_METHOD_TO` statements should be sandwiched between the `METHOD_LIST_BEGIN` and `METHOD_LIST_END` macro statements.
-
   URLからハンドラへのマッピングには`METHOD_ADD`マクロか、`ADD_METHOD_TO`マクロを使います。これらのマクロは全て`METHOD_LIST_BEGIN`から`METHOD_LIST_END`の間にあるようにしてください。
-
-  The `METHOD_ADD` macro automatically prefixes the namespace and class name in the path map. Therefore, in this example, the login function is registered to the `/demo/v1/user/token` path, and the getInfo function is registered to the `/demo/v1/user/xxx/info` path. Constraints are similar to the `PATH_ADD` macro of HttpSimpleController and are not described here.
 
   `METHOD_ADD`マクロでは、名前空間およびクラス名がパスの先頭に自動的に付加されます。この例では、`login`関数は`/demo/v1/user/token`に、`getInfo`関数は`/demo/v1/user/xxx/info`にマッピングされます。なお、制約の記法は`PATH_ADD`と近いため、ここでは省略します。
 
   `ADD_METHOD_TO`は`METHOD_ADD`とほとんど同じですが、接頭辞は追加しません。つまり、絶対パスで登録されるということです。
 
-  We see that `HttpController` provides a more flexible path mapping mechanism - we can put a class of functions in a class.
 
   このように、`HttpController`は柔軟なパスのマッピングを複数のハンドラに行うことができます。
 
-  In addition, you can see that the macros provide a method for parameter mapping. We can map the query parameters on the path to the parameter list of the function. The number of URL path parameters corresponds to the function parameter's position, this is very convenient. The common types which can be converted by string type all can be used as function parameters (such as std::string, int, float, double, etc.), and the drogon framework will automatically help you convert the type. This is very convenient for developing. Note that lvalue references must be of a const type.
 
   さらに、マクロの中でパラメーターマッピングを使っていることも分かります。クエリパラメータをパスにマッピングして、関数の引数に渡すことができます。URLパラメータの数字は引数の順番に対応しています。引数には、文字列型から変換できる一般的な型(`std::string`, `int`, `float`, `double`など)が使用でき、Drogonが自動的に変換します。注意点として、左辺値参照の型は`const`でなければなりません。
 
-  The same path can be mapped multiple times, distinguished from each other by Http Method, which is legal and is a common practice of the Restful API, such as:
-
-  HTTPメソッドが違う、同じパスへの複数回のマッピングには問題ありません。これはRestfulなAPIを作るには一般的な物です。
+  HTTPメソッドが違う、同じパスへの複数回のマッピングをする事も可能です。これはRestfulなAPIを作るには一般的な物です。
 
   ```c++
   METHOD_LIST_BEGIN
@@ -178,17 +167,13 @@ Each `HttpController` class can define many Http request handlers. Since the num
   METHOD_LIST_END
   ```
 
-  The placeholders of path parameters can be written in several ways:
-
   パスのプレースホルダにはいくつかの記法があります。
 
-  - `{}`: The position on the path is the position of the function parameter, which indicates that the path parameter maps to the corresponding position of the handler parameters.
-  - `{}`: パスでの位置が引数の位置になります。つまり、つまり……？？
+  - `{}`: パスでの位置が引数の位置になります。
   - `{1}, {2}`: パスのパラメーターに数字を入れた場合、番号で指定されたように引数に渡されます。
   - `{anystring}`: 括弧の中に文字を書いても動作への影響はありませんが、読みやすさを向上させることができます。`{}`と同等です。
   - `{1:anystring},{2:xxx}`: コロンより左側の数字は位置を表します。コロンより後ろ側には動作への影響はありませんが、読みやすさを向上させることができます。`{1}, {2}`と同等です。
 
-  The latter two are recommended, and if the path parameters and function parameters are in the same order, the third is enough. It is easy to see that the following are equivalent:
 
   3番目および4番目の記法を推奨します。また、パスでの順番と引数での順番が同じであれば、3番目の記法で十分です。例えば次の4つの意味は全く同じになります。
 
@@ -197,17 +182,10 @@ Each `HttpController` class can define many Http request handlers. Since the num
   - "/users/{user_id}/books/{book_id}"
   - "/users/{1:user_id}/books/{2}"
 
-  > **Note: Path matching is not case sensitive, but parameter names are case sensitive. Parameter values ​​can be mixed in uppercase and lowercase and passed unchanged to the controller.**
-
   > **Note: パスのマッチングには大文字小文字の区別がありませんが、パラメータでは区別します。パラメータの値は大文字小文字をそのままハンドラーの引数に渡します。**
 
   #### パラメータマッピング
-
-  Through the previous description, we know that the parameters on the path and the query parameters after the question mark can be mapped to the parameter list of the handler function. The type of the target parameter needs to meet the following conditions:
-
   ここまでの説明で、パスおよび`?`の後のクエリパラメータをハンドラーの引数にマッピングすることがわかりました。その引数の型は次の条件を満たす必要があります。
-
-  - Must be one of a value type, a constant left value reference, or a non-const right value reference. It cannot be a non-const lvalue reference. It is recommended to use an rvalue reference so that the user can dispose of it at will.
 
   - 型は値型(`int`など)、constな左辺値参照、constでない右辺値参照のいずれかの必要があり、constでない左辺値参照は使用できません。ユーザー側で破棄できるため、右辺値参照を使用することを推奨します。
 
@@ -216,8 +194,6 @@ Each `HttpController` class can define many Http request handlers. Since the num
   - std::string
 
   - `stringstream >>`演算子で代入できる型
-
-  > **In addition, the drogon framework also provides a mapping mechanism from the HttpRequestPtr object to any type of parameter.**. When the number of mapping parameters in your handler parameter list is more than the number of parameters on the path, the extra parameters will be converted by the HttpRequestPtr object. The user can define any type of conversion. The way to define this conversion is to specialize the `fromRequest` template (which is defined in the HttpRequest.h header file) in the drogon namespace, for example, say we need to make a RESTful interface to create a new user, we define the user's structure as follows:
 
   > **また、Drogonでは`HttpRequestPtr`から他の型へ変換した値をマッピングすることもできます。**ハンドラの引数よりパスのパラメータの方が多い場合、残りのパラメータは`HttpRequestPtr`により変換されます。変換方法を定義するには、`fromRequest`テンプレート(HttpRequest.hで定義されています)を特殊化してください。例えばこの例では、新しいユーザーを作成するRestfulなインタフェースでユーザーの構造体を定義しています。
 
@@ -301,9 +277,9 @@ Each `HttpController` class can define many Http request handlers. Since the num
   ここまでに示した方法では正規表現の機能に制限があります。より柔軟に正規表現を扱うために、`ADD_METHOD_VIA_REGIX`を使うことができます。
 
   ```c++
-  ADD_METHOD_VIA_REGEX(UserController::handler1,"/users/(.*)",Post); /// `/users/`から始まるパスにマッチし、それ以降のパスをhandler1の引数に渡すMatch any path prefixed with `/users/` and map the rest of the path to a parameter of the handler1.
-  ADD_METHOD_VIA_REGEX(UserController::handler2,"/.*([0-9]*)",Post); /// 数字で終わるパスにマッチし、その数字をhandler2の引数に渡す　Match any path that ends in a number and map that number to a parameter of the handler2.
-  ADD_METHOD_VIA_REGEX(UserController::handler3,"/(?!data).*",Post); /// `/data`で始まらない全てのパスにマッチMatch any path that does not start with '/data'
+  ADD_METHOD_VIA_REGEX(UserController::handler1,"/users/(.*)",Post); /// `/users/`から始まるパスにマッチし、それ以降のパスをhandler1の引数に渡す
+  ADD_METHOD_VIA_REGEX(UserController::handler2,"/.*([0-9]*)",Post); /// 数字で終わるパスにマッチし、その数字をhandler2の引数に渡す
+  ADD_METHOD_VIA_REGEX(UserController::handler3,"/(?!data).*",Post); /// `/data`で始まらない全てのパスにマッチ
   ```
 
   As can be seen, parameter mapping can also be done using regular expressions, and all strings matched by subexpressions will be mapped to the parameters of the handler in order.

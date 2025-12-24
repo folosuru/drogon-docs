@@ -107,7 +107,6 @@
   yum install gcc-c++
   ```
 
-  <!--The default installed cmake version is too low, use source installation-->
   ```shell
   # デフォルトのcmakeのバーフォンが古いため、ソースからビルド
   git clone https://github.com/Kitware/CMake
@@ -157,9 +156,6 @@
 
 * Environment
 
-  <!--
-  All the essentials are inherent in MacOS, you only need to upgrade it.
--->
 必要なものは既にMacOSにあるため、アップグレードするのみです
 
   ```shell
@@ -194,7 +190,6 @@
 #### Windows
 
 * 環境 (Visual Studio 2019)
-  <!--Install Visual Studio 2019 professional 2019, at least included these options:-->
   Visual Studio 2019 professional 2019を導入してください。また、次のオプションを含めて下さい。
   * MSVC C++ building tools
   * Windows 10 SDK
@@ -202,21 +197,12 @@
   * Test adaptor for Google Test
 
   パッケージマネージャの`conan`はDrogonに必要な物を全て導入することができます。Pythonが導入されている場合、pipを使って`conan`をインストールすることができます。
-  <!--
-  `conan` package manager could provide all dependencies that Drogon projector needs。If python   is installed on system, you could install `conan` package manager via pip. 
-  -->
   ```
   pip install conan
   ```
-  <!--
-  > of course you can download the installation file from `connan` [official website](https://  conan.io/) to install it also.
-  -->
 
   > (もちろん)`conan`を[公式サイト](https://conan.io/)からダウンロードしてインストールすることもできます。
 
-  <!--
-  Create`conanfile.txt`and add the following content to it:
-  -->
   `conanfile.txt`を作成し、次の内容を書き込んでください。
 
   * jsoncpp
@@ -227,9 +213,6 @@
     ```
 
   * uuid
-    <!--
-    No installation is required, the Windows 10 SDK already includes the uuid library.
-    -->
     Windows 10 SDKにuuidのライブラリが含まれているため、追加の導入は不要です。
 
   * zlib
@@ -248,20 +231,11 @@
 
 ## データベース (任意)
 
-<!--
-> **Note: These libraries below are not mandatory. You could choose to install one or more database according to your actual needs.**
-
-> **Note: If you want to develop your webapp with database, please install the database develop environment first, then install drogon, otherwise you will encounter a `NO DATABASE FOUND` issue.**
--->
-
 > **Note: これらのライブラリは必須ではありません。必要な物のみをインストールしてください。**
 
 > **Note: データベースを使うつもりの場合、まずデータベースをインストールしてから導入してからdrogonを導入して下さい。**
 
 * #### PostgreSQL
-  <!--
-  PostgreSQL's native C library libpq needs to be installed. The installation is as follows:
-  -->
   PostgreSQLのネイティブCライブラリの libpqが必要です。次のようにインストールします:
 
   * `ubuntu 16`: `sudo apt-get install postgresql-server-dev-all`
@@ -277,11 +251,6 @@
   MySQLのネイティブライブラリは非同期な読み書きに対応していません。MySQLの元の開発者がメンテナンスするMariaDBではMySQLと互換性があり、そのライブラリでは非同期な読み書きに対応しています。そのため、DrogonではMariaDBのライブラリを使ってMySQLをサポートします。なお、ベストプラクティスとして、MariaDBとMySQLを同じシステムに導入しないでください。
 
   MariaDBの導入は次のように行います
-<!--
-  MySQL's native library does not support asynchronous read and write. Fortunately, MySQL also has a version of MariaDB maintained by the original developer community. This version is compatible with MySQL, and its development library supports asynchronous read and write. Therefore, Drogon uses the MariaDB development library to provide the right MySQL support, as a best practice，your operating system shouldn't install both Mysql and MariaDB at the same time.
-
-  MariaDB installation is as follows：
--->
   * `ubuntu 18.04`: `sudo apt install libmariadbclient-dev`
   * `ubuntu 24.04`: `sudo apt install libmariadb-dev-compat libmariadb-dev`
   * `arch`: `sudo pacman -S mariadb`
@@ -305,14 +274,8 @@
   * `Windows conanfile`: `hiredis/1.0.0`
 
 > **Note: 上記のコマンドの中には開発用ライブラリのみがインストールされる物があります。サーバーを導入したい場合は、ｇｇｒｋｓ。(please use Google search yourself.)**
-<!--
-> **Note: Some of the above commands only install the development library. If you want to install a server also, please use Google search yourself.**
--->
 ## Drogonの導入
 
-<!--
-Assuming that the above environment and library dependencies are all ready, the installation process is very simple;
--->
 上述の開発環境や依存するライブラリが導入されていれば、導入はとても簡単です。
 
 * #### ソースからインストール(Linux)
@@ -334,7 +297,6 @@ Assuming that the above environment and library dependencies are all ready, the 
   cmake -DCMAKE_BUILD_TYPE=Release ..
   ```
 
-  After the installation is complete, the following files will be installed in the system（One can change the installation location with the CMAKE_INSTALL_PREFIX option）:
 
   インストールが完了すると、これらのファイルがインストールされます。（`CMAKE_INSTALL_PREFIX`オプションで変更することができます。）
 
@@ -423,7 +385,7 @@ Assuming that the above environment and library dependencies are all ready, the 
 
      * `drogon_ctl`を使うには、`vcpkg install drogon[ctl]`(32bit) あるいは `vcpkg install drogon[ctl]:x64-windows`(64bit)を使用してください。他のインストールオプションは`vcpkg search drogon`で閲覧できます。
 
-  2. **_drogon_ctl_** コマンドや依存パッケージを使用するため, 環境変数PATHを設定する必要があります. ここまでの説明通りに進めてきた場合、追加する必要があるのは次の通りです。 <!--2. To add **_drogon_ctl_** command and dependencies, you need to add some variables. By following this guide, you just need to add:-->
+  2. **_drogon_ctl_** コマンドや依存パッケージを使用するため, 環境変数PATHを設定する必要があります. ここまでの説明通りに進めてきた場合、追加する必要があるのは次の通りです。 
 
        - `C:\dev\vcpkg\installed\x64-windows\tools\drogon`
        - `C:\dev\vcpkg\installed\x64-windows\bin`
@@ -447,21 +409,20 @@ Assuming that the above environment and library dependencies are all ready, the 
      のように表示されれば、インストールは成功です。
 
    > Note:
-   > you need to be familiar with building cpp libraries by using: independent `gcc` or `g++` (**_[msys2](https://www.msys2.org/), [mingw-w64](https://www.mingw-w64.org/), [tdm-gcc](https://jmeubank.github.io/tdm-gcc/download/)_**) or Microsoft Visual Studio compiler
+   > `gcc` や`g++` (**_[msys2](https://www.msys2.org/)、 [mingw-w64](https://www.mingw-w64.org/)、 [tdm-gcc](https://jmeubank.github.io/tdm-gcc/download/)_**)、Microsoft Visual Studio compiler のような環境でのライブラリのビルドについて精通している必要があります
 
    > **_make.exe/nmake.exe/ninja.exe_** をcmakeのジェネレータに使うことを検討してください。設定方法が LinuxのMakeと同じなので、誰かがLinux/Windows を使っていて、Linux環境でデプロイしようとしている場合、システムの切り替え時のエラーを発生しにくくできます。
 
 * #### Use Docker Image
-  <!--We also provide a pre-build docker image on the [docker hub](https://hub.docker.com/r/drogonframework/drogon). All dependencies of Drogon and Drogon itself are already installed in the docker environment, where users can build Drogon-based applications directly.-->
   Dockerイメージを[docker hub](https://hub.docker.com/r/drogonframework/drogon)で提供しています. 必要なライブラリやdrogonの設定が完了してるため、直接アプリケーションを作ることができます。
 
 * #### Use Nix Package
 
-  There is a Nix package for Drogon which was released in version 21.11.
+  バージョン21.11から、drogonのnixパッケージが提供されています。
 
-  > **if you haven't installed Nix:** You can follow the instructions on the [NixOS website](https://nixos.org/download.html).
+  > **Nixをまだインストールしていない場合:** 手順については[NixOSの公式サイト](https://nixos.org/download.html)を参照してください
 
-  You can use the package by adding the following `shell.nix` to your project root:
+  次のような`shell.nix`をプロジェクトのルートに置くことでパッケージを利用することができます。
 
   ```
   { pkgs ? import <nixpkgs> {} }:
@@ -477,9 +438,9 @@ Assuming that the above environment and library dependencies are all ready, the 
   }
   ```
 
-  Enter the shell by running `nix-shell`. This will install Drogon and enter you into an environment with all its dependencies.
+  `nix-shell`を実行する事で、drogonのインストールと環境設定の完了したシェルに入ることができます。
 
-  The Nix package has a few options which you can configure according to your needs:
+  Nixパッケージにはオプションがあり、必要な物だけを設定する事ができます
 
   | option          | default value |
   | --------------- | ------------- |
@@ -488,7 +449,7 @@ Assuming that the above environment and library dependencies are all ready, the 
   | redisSupport    | false         |
   | mysqlSupport    | false         |
 
-  Here is an example of how you can change their values:
+  例えば、以下のようにすることで設定を変更する事ができます。
 
   ```
     buildInputs = with pkgs; [

@@ -73,8 +73,6 @@ echo '<h1>Hello Drogon!</h1>' >>index.html
 FATAL Permission denied (errno=13) , Bind address failed at 0.0.0.0:80 - Socket.cc:67
 ```
 
-We could copy the directory and files of a static website to the startup directory of this running webapp, then we can access them from the browser. The file types supported by drogon by default are
-
 静的サイトのファイルやディレクトリをアプリケーションが動作しているディレクトリにコピーすることで、ブラウザからアクセスできるようになります。Drogonではデフォルトで次のファイルを扱う事が出来ます。
 
 - html
@@ -109,9 +107,7 @@ controllerを作成するには、`drogon_ctl`を使います。`controllers`デ
 drogon_ctl create controller TestCtrl
 ```
 
-As you can see, there are two new files, TestCtrl.h and TestCtrl.cc：
-
-見てわかる通り、TestCtrl.h と TestCtrl.ccの2つのファイルが生成されています。
+実行してみると、TestCtrl.h と TestCtrl.ccの2つのファイルが生成されます。
 
 TestCtrl.hは以下の通り:
 
@@ -199,8 +195,6 @@ make
 `"http://localhost/"` か `"http://localhost/test"` をブラウザに入力してアクセスすると、"Hello World!"と表示されるはずです。
 
 > **Note: 静的リソースと動的リソースの両方が存在する場合、Drogonは動的なリソースを優先します。この例の場合、`http://localhost`にアクセスすると静的リソースである`index.html`ではなく、動的リソースであるcontrollerの`TestCtrl`が優先され、`Hello World!`と表示されます。**
-
-We see that adding a controller to an application is very simple. You only need to add the corresponding source file. Even the main file does not need to be modified. This loosely coupled design is very effective for web application development.
 
 controllerの作成がとてもシンプルな事がおわかりいただけたでしょうか。編集が必要なのは対応するソースファイルだけで、`main.cc`を編集する必要はありません。この疎結合な設計は開発を効率的にしてくれるでしょう。
 

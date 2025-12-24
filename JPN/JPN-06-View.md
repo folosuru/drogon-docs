@@ -4,45 +4,47 @@
 
 ### Viewsについて
 
-Although the front-end rendering technology is popular, the back-end application service only needs to return the corresponding data to the front-end. However, a good web framework should provide back-end rendering technology, so that the server program can dynamically generate HTML pages. Views can help users generate these pages. As the name implies, it is only responsible for doing the work related to the presentation, and the complex business logic should be handed over to the controller.
+最近ではフロントエンド技術も広まり、バックエンド側ではフロントエンド側にデータだけを渡せばいいようになりました。しかし、よいWebフレームワークというのはバックエンドレンダリング、つまり動的にHTMLを生成できる機能を備えておくべきでしょう。Viewはそれに役立ちます。Viewは名前の通り表示についてのみ担当し、複雑なビジネスロジックについてはcontrollerに担当させるべきです。
 
-The earliest web applications embed HTML into the program code to achieve the purpose of dynamically generating HTML pages, but this is inefficient, not intuitive, and so on. So there are languages such as JSP, which are the opposite. , embed the program code into the HTML page. The drogon is of course the latter solution. However, it is obvious that since C++ is compiled and executed, we need to convert the page embedded in C++ code into a C++ source program to compile into the application. Therefore, drogon defines its own specialized CSP (C++ Server Pages) description language, using the command line tool drogon_ctl to convert CSP files into C++ source files for compilation.
+初期のWebアプリケーションでは、HTMLを直接ソースコードに埋め込んで動的なHTMLページを生成していました。これは非効率的でわかりにくいので、JSPのような逆にHTMLの中にソースコードを埋め込む形式の言語が登場しました。もちろんdrogonでは後者を採用しています。ご存じの通りC++はコンパイル型の言語なので、まずHTMLに埋め込まれたC++をC++のソースコードに変換し、その後コンパイルする必要があります。drogonでは専用のCSP(C++ Server Pages)言語を使い、drogon_ctlコマンドでC++コードへと変換します。
 
 ### Drogon's CSP
 
-Drogon's CSP solution is very simple, we use special markup symbols to embed C++ code into the HTML page. among them:
+drogonのCSPは、特殊な記号でC++をHTMLの中に埋め込むシンプルな形式で、具体的には以下に示す通りです。
 
-- The content between the tags `<%inc` and `%>` is considered to be the part of the header file that needs to be referenced. Only the `#include` statement can be written here, such as `<%inc#include "xx.h" %>`, but many common header files are automatically included by drogon. The user basically does not use this tag;
-- Everything between the tags `<%c++` and `%>` is treated as C++ code, such as `<c++ std:string name="drogon"; %>`;
-- C++ code is generally transferred to the target source file intact, except for the following two special tags:
-  - `@@` represents the data variable passed by the controller, from which you can get the content you want to display;
-  - `$$` represents a stream object representing the content of the page, and the content to be displayed can be displayed on the page by the `<<` operator;
-- The content sandwiched between the tags `[[` and `]]` is considered to be the variable name. The view will use the name as the key to find the corresponding variable from the data passed from the controller and output it to the page. Spaces before and after the variable name will be omitted. Paired `[[` and `]]` should be on the same line. And for performance reasons, only three string data types are supported(const char *, std::string and const std::string), other data types should be output in the above-mentioned way(by `$$`);
-- The content sandwiched between the tags `{%` and `%}` is considered to be the name of a variable or an expression of the C++ program (not the keyword of the data passed by the controller), and the view will output the contents of the variable or the value of the expression to the page. It's easy to know that `{%val.xx%}` is equivalent to `<%c++$$<<val.xx;%>`, but the former is simpler and more intuitive. Similarly, do not write two tags in separate lines;
-- The content sandwiched between the tags `<%view` and `%>` is considered to be the name of the sub-view. The framework will find the corresponding sub-view and fill its contents to the location of the tag; the spaces before and after the view name will be ignored. Do not write `<%view` and `%>` in separate lines. Can use multiple levels of nesting, but not loop nesting;
-- The content between the tags `<%layout` and `%>` is considered as the name of the layout. The framework will find the corresponding layout and fill the content of this view to a position in the layout (in the layout the placeholder `[[]]` marks this position); spaces before and after the layout name will be ignored, and `<%layout` and `%>` should not be written in separate lines. You can use multiple levels of nesting, but not loop nesting. One template file can only inherit from one base layout, multiple inheritance from different layouts is not supported.
+- `<%inc` と `%>` に挟まれた部分では、必要なヘッダーファイルを定義します。ここには`#include`文のみを書きます。例えば、`<%inc#include "xx.h" %>`のような形です。ただ、多くの一般的なヘッダーはdrogonによって自動的にインクルードされます。なので、このタグを使う機会はあまりありません。
 
-### The use of views
+- `<%c++` と `%>` に挟まれた部分は、C++コードとして解釈されます。例えば、`<c++ std:string name="drogon"; %>`のように書きます。
+- C++コードは通常そのままC++ソースファイルに書き込まれますが、2つの例外があります。
+  - `@@` はControllerから渡されたデータを表し、例えばそこから表示すべきデータを取得できます。
+  - `$$` はページの内容を表すストリームオブジェクトで、ページに表示するコンテンツを`<<`演算子で出力できます。
 
-The http response of the drogon application is generated by the controller handler, so the response rendered by the view is also generated by the handler, generated by calling the following interface:
+- `[[` と `]]`に挟まれた部分は変数名と解釈されます。これはControllerから渡されたデータのキーとして解釈され、その値がページに出力されます。`[[` と `]]`の前後にあるスペースは無視されます。`[[` と `]]`は同じ行に書く必要があります。パフォーマンス上の理由から、`const char *` `std::string` `const std::string`の3つの型のみに対応しています。他の型のデータを出力する場合は上述の`$$`を使った方法を利用してください。
+- `{%` と `%}`に挟まれた部分は、C++の式や変数名（Controllerからの値ではない）として解釈され、その値がページに出力されます。つまるところ、 `{%val.xx%}` と `<%c++$$<<val.xx;%>`は全く同じ意味です。ですが、こちらの方がシンプルでわかりやすいでしょう。上に同じく、タグは行をまたいではいけません。
+- `<%view` と `%>`の間にある文字列は、sub-viewの名前として解釈されます。drogonは対応するviewを探し、このタグの位置に内容を書き込みます。名前の前後にあるスペースは無視されます。`<%view` と `%>` が行をまたいではいけません。sub-viewは複数回ネストする事ができますが、再帰はしないようにしてください。
+- `<%layout` と `%>`の間にある文字列は、レイアウト名として解釈されます。drogonは対応するレイアウトを探し、viewの内容をレイアウトの対応する位置（`[[]]`の位置）に埋め込みます。レイアウト名の前後のスペースは無視され、改行が含まれてはなりません。複数回のネストをすることができますが、再帰はしないようにしてください。また、1つのファイルで継承できるレイアウトは1つのみで、複数個のレイアウトを利用する事はできません。
+
+### viewの使用例
+
+drogonのHTTPレスポンスはControllerのハンドラで作成するので、viewによるレスポンスも同様にハンドラで行い、以下のようなインターフェースで利用できます。
 
 ```c++
 static HttpResponsePtr newHttpViewResponse(const std::string &viewName,
                                            const HttpViewData &data);
 ```
 
-This interface is a static method of the HttpResponse class, which has two parameters:
+これはHttpResponseクラスのstatic関数で、以下に示す2つの引数を取ります。
 
-- **viewName**: the name of the view, the name of the incoming csp file (**the extension can be omitted**);
-- **data**: The controller's handler passes the data to the view. The type is `HttpViewData`. This is a special map. You can save and retrieve any type of object. For details, please refer to [HttpViewData API] (API-HttpViewData) Description
+- **viewName**: Viewの名前。CSPのファイル名です (**拡張子は省略可能**);
+- **data**: controllerからviewへ渡すデータ。型は`HttpViewData`型で、これは特殊なMapで、自由な型を保存・取得できます。 詳細は [HttpViewData API] (API-HttpViewData) を参照してください。
 
-As you can see, the controller does not need to reference the header file of the view. The controller and the view are well decoupled; their only connection is the data variable.
+見ての通り、controllerではviewのヘッダーファイルをインクルードしたりする必要はなく、両者は分離されています。唯一の接点がdata変数で、これについては双方で合わせる必要があります
 
-### A simple example
+### 簡単な例
 
-Now let's make a view that displays the parameters of the HTTP request sent by the browser in the returned html page.
+それでは、ブラウザから送られたHTTPリクエストのパラメータを表示するHTMLページを返すviewを作ってみましょう。
 
-This time we directly define the handler with the HttpAppFramework interface. In the main file, add the following code before calling the run() method:
+今回は直接HttpAppFrameworkによるハンドラを定義します。mainファイルのrun()よりも前にに以下のようなコードを追加してください。
 
 ```c++
 drogon::HttpAppFramework::instance()
@@ -59,8 +61,8 @@ drogon::HttpAppFramework::instance()
                         });
 ```
 
-The above code registers a lambda expression handler on the `/list_para` path, passing the requested parameters to the view display.
-Then, Go to the views folder and create a view file ListParameters.csp with the following contents:
+上のコードはラムダ式を利用してパスが`/list_para`に対してのハンドラを登録し、リクエストのパラメータをviewに渡して表示しています。
+次に、viewsフォルダに移動してListParameters.cspを作成し、次のように書き込みます。
 
 ```html
 <!DOCTYPE html>
@@ -94,23 +96,23 @@ Then, Go to the views folder and create a view file ListParameters.csp with the 
 </html>
 ```
 
-We can use `drogon_ctl` command tool to convert ListParameters.csp into C++ source files as bellow:
+次のように`drogon_ctl`コマンドを利用してListParameters.cspをC++ソースファイルへ変換できます。
 
 ```shell
 drogon_ctl create view ListParameters.csp
 ```
 
-After the operation is finished, two source files, ListParameters.h and ListParameters.cc, will appear in the current directory, which can be used to compile into the web application;
+変換が終わると、カレントディレクトリにListParameters.h と ListParameters.ccの2つのファイルが出力されます。このファイルはアプリケーションにコンパイルして組み込むことができます。
 
-Recompile the entire project with CMake, run the target program webapp, you can test the effect in the browser, enter `http://localhost/list_para?p1=a&p2=b&p3=c` in the address bar, you can see the following page :
+プロジェクトをCMakeで再コンパイルして実行し、ブラウザで`http://localhost/list_para?p1=a&p2=b&p3=c`にアクセスしてみると次のように表示されます。
 
 ![view page](https://drogonframework.github.io/drogon-docs/images/viewdemo.png)
 
-The html page rendered by the backend is simply added.
+これでバックエンドによるHTMLレンダリングを追加する事ができました。
 
-### Automated processing of csp files
+### CSPファイルの処理の自動化
 
-**Note: If your project is create by the `drogon_ctl` command, the work described in this section is done automatically by `drogon_ctl`.**
+**Note: プロジェクトが `drogon_ctl` コマンドで作成された場合、 この項で説明している事はすでに`drogon_ctl`によって行われています。**
 
 Obviously, it is too inconvenient to manually run the drogon_ctl command every time you modify the csp file. We can put the processing of drogon_ctl into the CMakeLists.txt file. Still use the previous example as an example. Let's assume that we put all the csp files In the views folder, CMakeLists.txt can be added as follows:
 
@@ -135,9 +137,9 @@ Then add a new source file collection ${VIEWSRC} to the add_executable statement
 Add_executable(webapp ${SRC_DIR} ${VIEWSRC})
 ```
 
-### Dynamic compilation and loading of views
+### viewの動的コンパイル・ロード
 
-Drogon provides a way to dynamically compile and load csp files during the application runtime, using the following interface:
+drogonは以下の関数によって実行時にCSPを動的にコンパイル・ロードする機能を提供しています。
 
 ```c++
 void enableDynamicViewsLoading(const std::vector<std::string> &libPaths);
@@ -147,9 +149,9 @@ The interface is a member method of `HttpAppFramework`, and the parameter is an 
 
 Obviously, this function depends on the development environment. If both drogon and webapp are compiled on this server, there should be no problem in dynamically loading the csp page.
 
-> **Note: Dynamic views should not be compiled into the application statically. This means that if the view is statically compiled, it cannot be updated via dynamic view loading. You can create a directory outside the compilation folder and move views into it during development.**
+> **Note: 動的Viewをアプリケーションに静的にリンクしないでください。viewが静的リンクされている場合、動的viewによって更新する事ができません。開発時はコンパイル対象外のディレクトリにViewのファイルを移動させてください。**
 
-> **Note: This feature is best used to adjust the HTML page during the development phase. In the production environment, it is recommended to compile the csp file directly into the target file. This is mainly for security and stability.**
+> **Note: この機能はHTMLページを開発しているときに最適な物です。セキュリティと安全のために、本番環境においては直接CSPファイルをターゲットに指定する事をおすすめします。**
 
 > **Note: If a `symbol not found` error occurs while loading a dynamic view, please use the `cmake .. -DCMAKE_ENABLE_EXPORTS=on` to configure your project, or uncomment the last line (`set_property(TARGET ${PROJECT_NAME} PROPERTY ENABLE_EXPORTS ON)`) in your project's CMakeLists.txt, and then rebuild the project**
 

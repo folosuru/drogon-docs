@@ -18,9 +18,8 @@ Void handlerName(const HttpRequestPtr &req,
 
 
 お気づきかもしれませんが、これは非同期なインタフェースです。例えば、時間のかかる処理を別のスレッドで行い、完了したらコールバックを呼び出す、といったことができます。
-<!--Obviously, this is an asynchronous interface, one can call the callback after completing the time-consuming operation at other threads;-->
 
-Drogonには`HttpSimpleController`、`HttpController`、`WebSocketController`の3種類のcontrollerがあります。これらを使うためには対応する暮らすを継承する必要があります。例えば、`MyClass`という`HttpSimpleController`の実装を作成するには次のようにします。
+Drogonには`HttpSimpleController`、`HttpController`、`WebSocketController`の3種類のcontrollerがあります。これらを使うためには対応するクラスを継承する必要があります。例えば、`MyClass`という`HttpSimpleController`の実装を作成するには次のようにします。
 
 
 ```c++
